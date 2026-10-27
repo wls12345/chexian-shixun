@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汽车保险理赔实训智能助教（教学仿真）</title>
+<style>
+  :root{--main:#1a5fb4;--bg:#f5f7fa;--card:#fff;--line:#dde3ea;--warn:#b45309;--ok:#15803d;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:#222;line-height:1.6;}
+  header{background:var(--main);color:#fff;padding:16px 24px;}
+  header h1{margin:0;font-size:20px;}
+  header p{margin:4px 0 0;font-size:13px;opacity:.9;}
+  .notice{background:#fff7ed;border-left:4px solid var(--warn);color:#7c2d12;padding:12px 16px;margin:16px 24px;font-size:13px;border-radius:4px;}
+  main{max-width:1100px;margin:0 auto;padding:0 24px 40px;}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+  .tabs button{border:1px solid var(--line);background:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:14px;}
+  .tabs button.active{background:var(--main);color:#fff;border-color:var(--main);}
+  .panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:20px;}
+  .panel.active{display:block;}
+  h2{font-size:17px;margin:0 0 14px;color:var(--main);}
+  label{display:block;font-size:13px;margin:10px 0 4px;color:#444;}
+  input,select,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:5px;font-size:14px;font-family:inherit;}
+  textarea{min-height:70px;resize:vertical;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:640px){.row{grid-template-columns:1fr;}}
+  .btn{background:var(--main);color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-size:14px;margin-top:14px;}
+  .btn.ghost{background:#fff;color:var(--main);border:1px solid var(--main);}
+  .result{margin-top:14px;padding:12px;background:#f0f7ff;border:1px solid #cfe0f5;border-radius:6px;font-size:13px;white-space:pre-wrap;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px;}
+  th,td{border:1px solid var(--line);padding:8px;text-align:left;}
+  th{background:#eef3fa;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;}
+  .badge.ok{background:#dcfce7;color:var(--ok);}
+  .badge.warn{background:#fef3c7;color:var(--warn);}
+  footer{text-align:center;font-size:12px;color:#888;padding:20px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>汽车保险理赔实训智能助教</h1>
+  <p>高职汽车保险 / 汽车定损专业 · 车险理赔实训仿真教学系统（对标保险公司理赔员业务流程）</p>
+</header>
+
+<div class="notice">
+  <strong>教学仿真声明：</strong>本系统仅为教学仿真平台，严禁处理真实保单、真实客户隐私、真实资金理赔业务。所有车牌、证件、联系信息默认全部为虚拟实训数据，输出内容仅作为实训教学参考，不具备法律效力，不能作为真实定责、理赔依据。
+</div>
+
+<main>
+  <div class="tabs">
+    <button class="active" data-tab="report">① 报案登记</button>
+    <button data-tab="survey">② 查勘定损</button>
+    <button data-tab="audit">③ 单证审核</button>
+    <button data-tab="calc">④ 核赔计算</button>
+    <button data-tab="close">⑤ 结案归档</button>
+  </div>
+
+  <!-- 报案登记 -->
+  <section class="panel active" id="report">
+    <h2>报案登记（虚拟实训数据）</h2>
+    <div class="row">
+      <div><label>报案号（自动生成）</label><input id="rNo" readonly></div>
+      <div><label>车牌号（虚拟）</label><input id="rPlate" placeholder="如：鲁B·教A1234"></div>
+      <div><label>被保险人（虚拟姓名）</label><input id="rName" placeholder="如：张实训"></div>
+      <div><label>联系电话（虚拟）</label><input id="rPhone" placeholder="如：13800000000"></div>
+      <div><label>事故时间</label><input id="rTime" type="datetime-local"></div>
+      <div><label>事故地点</label><input id="rPlace" placeholder="如：青岛市某实训路段"></div>
+      <div><label>事故类型</label>
+        <select id="rType">
+          <option>单方事故</option><option>双方事故</option><option>多方事故</option>
+          <option>人伤事故</option><option>水淹/自然灾害</option><option>盗抢</option>
+        </select>
+      </div>
+      <div><label>是否报警</label>
+        <select id="rPolice"><option>是</option><option>否</option></select>
+      </div>
+    </div>
+    <label>事故经过（虚拟描述）</label>
+    <textarea id="rDesc" placeholder="请填写虚拟实训事故经过……"></textarea>
+    <button class="btn" onclick="saveReport()">提交报案登记</button>
+    <div class="result" id="reportOut">尚未提交。</div>
+  </section>
+
+  <!-- 查勘定损 -->
+  <section class="panel" id="survey">
+    <h2>查勘定损（虚拟实训数据）</h2>
+    <div class="row">
+      <div><label>关联报案号</label><input id="sNo" readonly></div>
+      <div><label>查勘员（虚拟）</label><input id="sMan" placeholder="如：李查勘"></div>
+      <div><label>查勘结论</label>
+        <select id="sResult"><option>属于保险责任</option><option>不属于保险责任</option><option>需补充查勘</option></select>
+      </div>
+      <div><label>定损方式</label>
+        <select id="sMode"><option>4S店定损</option><option>综合修理厂定损</option><option>推定全损</option></select>
+      </div>
+      <div><label>配件费（元）</label><input id="sPart" type="number" value="0"></div>
+      <div><label>工时费（元）</label><input id="sLabor" type="number" value="0"></div>
+      <div><label>残值（元）</label><input id="sResid" type="number" value="0"></div>
+      <div><label>施救费（元）</label><input id="sRescue" type="number" value="0"></div>
+    </div>
+    <label>定损说明</label>
+    <textarea id="sDesc" placeholder="虚拟实训定损说明……"></textarea>
+    <button class="btn" onclick="saveSurvey()">提交查勘定损</button>
+    <div class="result" id="surveyOut">尚未提交。</div>
+  </section>
+
+  <!-- 单证审核 -->
+  <section class="panel" id="audit">
+    <h2>单证审核（虚拟实训数据）</h2>
+    <p style="font-size:13px;color:#555;">勾选已提交的虚拟单证，系统进行完整性校验（教学仿真）。</p>
+    <div id="docList"></div>
+    <button class="btn" onclick="saveAudit()">提交单证审核</button>
+    <div class="result" id="auditOut">尚未审核。</div>
+  </section>
+
+  <!-- 核赔计算 -->
+  <section class="panel" id="calc">
+    <h2>核赔计算（教学仿真公式，非真实理赔依据）</h2>
+    <div class="row">
+      <div><label>车辆损失金额（元）</label><input id="cLoss" type="number" value="0"></div>
+      <div><label>交强险财产损失限额（元）</label><input id="cJq" type="number" value="2000"></div>
+      <div><label>商业三者险责任限额（元）</label><input id="cSan" type="number" value="1000000"></div>
+      <div><label>事故责任比例（%）</label><input id="cRate" type="number" value="100"></div>
+      <div><label>免赔率（%）</label><input id="cDed" type="number" value="0"></div>
+      <div><label>绝对免赔额（元）</label><input id="cAbs" type="number" value="0"></div>
+    </div>
+    <button class="btn" onclick="calcClaim()">试算核赔金额</button>
+    <button class="btn ghost" onclick="resetCalc()">重置</button>
+    <div class="result" id="calcOut">尚未试算。</div>
+  </section>
+
+  <!-- 结案归档 -->
+  <section class="panel" id="close">
+    <h2>结案归档（虚拟实训数据）</h2>
+    <div class="row">
+      <div><label>关联报案号</label><input id="kNo" readonly></div>
+      <div><label>核赔金额（元）</label><input id="kPay" type="number" value="0"></div>
+      <div><label>结案方式</label>
+        <select id="kMode"><option>正常赔付结案</option><option>拒赔结案</option><option>注销结案</option><option>协商结案</option></select>
+      </div>
+      <div><label>支付对象（虚拟）</label><input id="kPayee" placeholder="如：虚拟修理厂/被保险人"></div>
+    </div>
+    <label>结案意见</label>
+    <textarea id="kDesc" placeholder="虚拟实训结案意见……"></textarea>
+    <button class="btn" onclick="saveClose()">提交结案归档</button>
+    <div class="result" id="closeOut">尚未结案。</div>
+  </section>
+
+  <h2 style="margin-top:28px;">实训案件台账（虚拟数据）</h2>
+  <table id="ledger">
+    <thead><tr><th>报案号</th><th>车牌</th><th>事故类型</th><th>定损金额</th><th>核赔金额</th><th>状态</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</main>
+
+<footer>汽车保险理赔实训智能助教 · 教学仿真平台 · 数据均为虚拟实训数据 · 不具备法律效力</footer>
+
+<script>
+/* ========== 全局虚拟案件库 ========== */
+const store = { case: null };
+
+/* 标签切换 */
+document.querySelectorAll('.tabs button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  };
+});
+
+/* 初始化虚拟报案号 */
+function genNo(){ return 'JX' + new Date().getFullYear() + String(Math.floor(Math.random()*900000+100000)); }
+window.onload = ()=>{
+  const no = genNo();
+  document.getElementById('rNo').value = no;
+  document.getElementById('sNo').value = no;
+  document.getElementById('kNo').value = no;
+  buildDocs();
+};
+
+/* ① 报案 */
+function saveReport(){
+  const v = id=>document.getElementById(id).value.trim();
+  if(!v('rPlate')||!v('rName')){ alert('请至少填写车牌号与被保险人（虚拟）'); return; }
+  store.case = {
+    no: v('rNo'), plate: v('rPlate'), name: v('rName'), phone: v('rPhone'),
+    time: v('rTime'), place: v('rPlace'), type: v('rType'), police: v('rPolice'),
+    desc: v('rDesc'), status: '已报案', survey: null, audit: null, pay: 0
+  };
+  document.getElementById('reportOut').textContent =
+    `✅ 报案登记成功（教学仿真）\n报案号：${store.case.no}\n车牌：${store.case.plate}\n事故类型：${store.case.type}\n当前状态：已报案`;
+  updateLedger();
+}
+
+/* ② 查勘定损 */
+function saveSurvey(){
+  if(!store.case){ alert('请先完成①报案登记'); return; }
+  const num = id=>Number(document.getElementById(id).value||0);
+  const total = num('sPart')+num('sLabor')+num('sRescue')-num('sResid');
+  store.case.survey = {
+    man: document.getElementById('sMan').value,
+    result: document.getElementById('sResult').value,
+    mode: document.getElementById('sMode').value,
+    part: num('sPart'), labor: num('sLabor'), resid: num('sResid'), rescue: num('sRescue'),
+    total: total, desc: document.getElementById('sDesc').value
+  };
+  store.case.status = '已查勘定损';
+  document.getElementById('surveyOut').textContent =
+    `✅ 查勘定损提交成功（教学仿真）\n查勘结论：${store.case.survey.result}\n定损方式：${store.case.survey.mode}\n定损合计（配件+工时+施救-残值）：¥${total.toFixed(2)}`;
+  document.getElementById('cLoss').value = total;
+  updateLedger();
+}
+
+/* ③ 单证审核 */
+const DOCS = ['报案记录','事故证明/报警记录','驾驶证（虚拟）','行驶证（虚拟）','保险单（虚拟）','现场照片','定损单','维修发票（虚拟）','身份证（虚拟）','银行账户（虚拟）'];
+function buildDocs(){
+  document.getElementById('docList').innerHTML = DOCS.map((d,i)=>
+    `<label style="display:inline-block;width:48%;margin:6px 0;font-size:13px;"><input type="checkbox" id="doc${i}" style="width:auto;margin-right:6px;">${d}</label>`
+  ).join('');
+}
+function saveAudit(){
+  if(!store.case){ alert('请先完成①报案登记'); return; }
+  const checked = DOCS.filter((_,i)=>document.getElementById('doc'+i).checked);
+  const missing = DOCS.filter((_,i)=>!document.getElementById('doc'+i).checked);
+  store.case.audit = { checked, missing };
+  store.case.status = missing.length ? '单证待补充' : '单证齐全';
+  document.getElementById('auditOut').textContent =
+    `📋 单证审核结果（教学仿真）\n已提交 ${checked.length}/${DOCS.length} 项\n` +
+    (missing.length ? `⚠ 缺失单证：${missing.join('、')}\n请补充后再进入核赔环节。` : `✅ 单证齐全，可进入核赔计算。`);
+  updateLedger();
+}
+
+/* ④ 核赔计算（教学仿真公式） */
+function calcClaim(){
+  const n = id=>Number(document.getElementById(id).value||0);
+  const loss=n('cLoss'), jq=n('cJq'), rate=n('cRate')/100, ded=n('cDed')/100, abs=n('cAbs');
+  if(loss<=0){ alert('请输入车辆损失金额'); return; }
+  // 交强险财产损失优先赔付（教学仿真简化）
+  const jqPay = Math.min(loss, jq);
+  // 商业险赔付（教学仿真简化：损失-交强险，乘责任比例，扣免赔率与绝对免赔额）
+  let bizPay = Math.max(0, loss - jqPay) * rate;
+  bizPay = bizPay * (1 - ded) - abs;
+  bizPay = Math.max(0, bizPay);
+  const total = jqPay + bizPay;
+  document.getElementById('calcOut').textContent =
+    `🧮 核赔试算（教学仿真，非真实理赔依据）\n` +
+    `车辆损失金额：¥${loss.toFixed(2)}\n` +
+    `交强险财产损失赔付：¥${jqPay.toFixed(2)}\n` +
+    `商业险赔付（责任比例${(rate*100).toFixed(0)}%，免赔率${(ded*100).toFixed(0)}%，绝对免赔¥${abs}）：¥${bizPay.toFixed(2)}\n` +
+    `合计核赔金额：¥${total.toFixed(2)}`;
+  if(store.case){ store.case.pay = total; document.getElementById('kPay').value = total.toFixed(2); updateLedger(); }
+}
+function resetCalc(){
+  ['cLoss','cJq','cSan','cRate','cDed','cAbs'].forEach((id,i)=>{
+    document.getElementById(id).value = [0,2000,1000000,100,0,0][i];
+  });
+  document.getElementById('calcOut').textContent='尚未试算。';
+}
+
+/* ⑤ 结案归档 */
+function saveClose(){
+  if(!store.case){ alert('请先完成①报案登记'); return; }
+  const pay = Number(document.getElementById('kPay').value||0);
+  store.case.pay = pay;
+  store.case.status = '已结案';
+  store.case.close = {
+    mode: document.getElementById('kMode').value,
+    payee: document.getElementById('kPayee').value,
+    desc: document.getElementById('kDesc').value
+  };
+  document.getElementById('closeOut').textContent =
+    `🗂 结案归档成功（教学仿真）\n报案号：${store.case.no}\n结案方式：${store.case.close.mode}\n核赔金额：¥${pay.toFixed(2)}\n支付对象（虚拟）：${store.case.close.payee||'—'}\n状态：已结案`;
+  updateLedger();
+}
+
+/* 台账更新 */
+function updateLedger(){
+  const tb = document.querySelector('#ledger tbody');
+  if(!store.case){ tb.innerHTML='<tr><td colspan="6" style="color:#999;">暂无实训案件</td></tr>'; return; }
+  const c = store.case;
+  const total = c.survey ? c.survey.total : 0;
+  const badge = c.status==='已结案' ? '<span class="badge ok">已结案</span>' : '<span class="badge warn">'+c.status+'</span>';
+  tb.innerHTML = `<tr><td>${c.no}</td><td>${c.plate}</td><td>${c.type}</td><td>¥${total.toFixed(2)}</td><td>¥${Number(c.pay||0).toFixed(2)}</td><td>${badge}</td></tr>`;
+}
+updateLedger();
+</script>
+</body>
+</html>
